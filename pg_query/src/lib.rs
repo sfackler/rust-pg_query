@@ -1,10 +1,12 @@
+#[macro_use]
+extern crate lazy_static;
 extern crate libc;
 extern crate pg_query_sys;
 
 use std::ffi::{CString, CStr};
 use std::fmt;
 use std::str;
-use std::sync::{Once, ONCE_INIT};
+use std::sync::{Once, ONCE_INIT, Mutex, MutexGuard};
 
 #[derive(Clone)]
 pub struct Error {
@@ -38,18 +40,24 @@ impl Error {
     }
 }
 
-fn init() {
+fn init() -> MutexGuard<'static, ()> {
     static ONCE: Once = ONCE_INIT;
+
+    lazy_static! {
+        static ref LOCK: Mutex<()> = Mutex::new(());
+    }
 
     ONCE.call_once(|| {
         unsafe {
             pg_query_sys::pg_query_init();
         }
-    })
+    });
+
+    LOCK.lock().unwrap_or_else(|e| e.into_inner())
 }
 
 pub fn parse_to_json(query: &str) -> Result<String, Error> {
-    init();
+    let _lock = init();
 
     let query = CString::new(query).expect("interior null");
     unsafe {
