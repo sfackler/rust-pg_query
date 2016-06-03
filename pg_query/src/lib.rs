@@ -40,7 +40,7 @@ impl Error {
     }
 }
 
-fn init() -> MutexGuard<'static, ()> {
+fn lock() -> MutexGuard<'static, ()> {
     lazy_static! {
         static ref LOCK: Mutex<()> = {
             unsafe {
@@ -55,7 +55,7 @@ fn init() -> MutexGuard<'static, ()> {
 }
 
 pub fn parse_to_json(query: &str) -> Result<String, Error> {
-    let _lock = init();
+    let _lock = lock();
 
     let query = CString::new(query).expect("interior null");
     unsafe {
