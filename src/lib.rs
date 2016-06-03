@@ -18,6 +18,7 @@ pub struct PgQueryError {
 pub struct PgQueryParseResult {
     pub parse_tree: *mut c_char,
     pub stderr_buffer: *mut c_char,
+    pub error: *mut PgQueryError,
 }
 
 #[repr(C)]
@@ -25,6 +26,7 @@ pub struct PgQueryParseResult {
 pub struct PgQueryPlpgsqlParseResult {
     pub plpgsql_func: *mut c_char,
     pub stderr_buffer: *mut c_char,
+    pub error: *mut PgQueryError,
 }
 
 #[repr(C)]
@@ -32,6 +34,7 @@ pub struct PgQueryPlpgsqlParseResult {
 pub struct PgQueryFingerprintResult {
     pub hexdigest: *mut c_char,
     pub stderr_buffer: *mut c_char,
+    pub error: *mut PgQueryError,
 }
 
 #[repr(C)]
