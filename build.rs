@@ -18,6 +18,7 @@ fn main() {
     if !build_dir.exists() {
         run(Command::new("tar").arg("xzf").arg(out_dir.join(tarball)).current_dir(&out_dir));
     }
+
     let mut command = Command::new("make");
     command.env_remove("PROFILE").arg("-C").arg(&build_dir);
     if env::var("PROFILE").unwrap() == "debug" {
