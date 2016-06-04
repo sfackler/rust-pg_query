@@ -7,7 +7,7 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::collections::HashMap;
 
-use types::StructDef;
+use types::{Struct, Enum};
 
 mod types;
 
@@ -17,6 +17,12 @@ fn main() {
     let struct_defs = File::open(dir.join("struct_defs.json")).unwrap();
     let struct_defs = BufReader::new(struct_defs);
 
-    let struct_defs: HashMap<String, HashMap<String, StructDef>> =
+    let struct_defs: HashMap<String, HashMap<String, Struct>> =
         serde_json::from_reader(struct_defs).unwrap();
+
+    let enum_defs = File::open(dir.join("enum_defs.json")).unwrap();
+    let enum_defs = BufReader::new(enum_defs);
+
+    let enum_defs: HashMap<String, HashMap<String, Enum>> =
+        serde_json::from_reader(enum_defs).unwrap();
 }

@@ -1,49 +1,49 @@
 use serde::de::{Deserialize, Deserializer, Visitor, MapVisitor, Error};
 
-pub struct StructDef {
+pub struct Struct {
     pub fields: Vec<Field>,
     pub comment: Option<String>,
 }
 
-impl Deserialize for StructDef {
-    fn deserialize<D>(d: &mut D) -> Result<StructDef, D::Error>
+impl Deserialize for Struct {
+    fn deserialize<D>(d: &mut D) -> Result<Struct, D::Error>
         where D: Deserializer
     {
-        enum StructDefField {
+        enum StructField {
             Fields,
             Comment,
         }
 
-        impl Deserialize for StructDefField {
-            fn deserialize<D>(d: &mut D) -> Result<StructDefField, D::Error>
+        impl Deserialize for StructField {
+            fn deserialize<D>(d: &mut D) -> Result<StructField, D::Error>
                 where D: Deserializer
             {
-                struct StructDefFieldVisitor;
+                struct StructFieldVisitor;
 
-                impl Visitor for StructDefFieldVisitor {
-                    type Value = StructDefField;
+                impl Visitor for StructFieldVisitor {
+                    type Value = StructField;
 
-                    fn visit_str<E>(&mut self, value: &str) -> Result<StructDefField, E>
+                    fn visit_str<E>(&mut self, value: &str) -> Result<StructField, E>
                         where E: Error
                     {
                         match value {
-                            "fields" => Ok(StructDefField::Fields),
-                            "comment" => Ok(StructDefField::Comment),
+                            "fields" => Ok(StructField::Fields),
+                            "comment" => Ok(StructField::Comment),
                             f => Err(E::unknown_field(f)),
                         }
                     }
                 }
 
-                d.deserialize(StructDefFieldVisitor)
+                d.deserialize(StructFieldVisitor)
             }
         }
 
-        struct StructDefVisitor;
+        struct StructVisitor;
 
-        impl Visitor for StructDefVisitor {
-            type Value = StructDef;
+        impl Visitor for StructVisitor {
+            type Value = Struct;
 
-            fn visit_map<V>(&mut self, mut visitor: V) -> Result<StructDef, V::Error>
+            fn visit_map<V>(&mut self, mut visitor: V) -> Result<Struct, V::Error>
                 where V: MapVisitor
             {
                 let mut fields = None;
@@ -51,8 +51,8 @@ impl Deserialize for StructDef {
 
                 loop {
                     match try!(visitor.visit_key()) {
-                        Some(StructDefField::Fields) => fields = Some(try!(visitor.visit_value())),
-                        Some(StructDefField::Comment) => {
+                        Some(StructField::Fields) => fields = Some(try!(visitor.visit_value())),
+                        Some(StructField::Comment) => {
                             comment = Some(try!(visitor.visit_value()));
                         }
                         None => break,
@@ -70,14 +70,14 @@ impl Deserialize for StructDef {
 
                 try!(visitor.end());
 
-                Ok(StructDef {
+                Ok(Struct {
                     fields: fields,
                     comment: comment,
                 })
             }
         }
 
-        d.deserialize(StructDefVisitor)
+        d.deserialize(StructVisitor)
     }
 }
 
@@ -167,5 +167,167 @@ impl Deserialize for Field {
         }
 
         d.deserialize(FieldVisitor)
+    }
+}
+
+pub struct Enum {
+    pub values: Vec<Variant>,
+    pub comment: Option<String>,
+}
+
+impl Deserialize for Enum {
+    fn deserialize<D>(d: &mut D) -> Result<Enum, D::Error>
+        where D: Deserializer
+    {
+        enum EnumField {
+            Values,
+            Comment,
+        }
+
+        impl Deserialize for EnumField {
+            fn deserialize<D>(d: &mut D) -> Result<EnumField, D::Error>
+                where D: Deserializer
+            {
+                struct EnumFieldVisitor;
+
+                impl Visitor for EnumFieldVisitor {
+                    type Value = EnumField;
+
+                    fn visit_str<E>(&mut self, value: &str) -> Result<EnumField, E>
+                        where E: Error
+                    {
+                        match value {
+                            "values" => Ok(EnumField::Values),
+                            "comment" => Ok(EnumField::Comment),
+                            f => Err(E::unknown_field(f)),
+                        }
+                    }
+                }
+
+                d.deserialize(EnumFieldVisitor)
+            }
+        }
+
+        struct EnumVisitor;
+
+        impl Visitor for EnumVisitor {
+            type Value = Enum;
+
+            fn visit_map<V>(&mut self, mut visitor: V) -> Result<Enum, V::Error>
+                where V: MapVisitor
+            {
+                let mut values = None;
+                let mut comment = None;
+
+                loop {
+                    match try!(visitor.visit_key()) {
+                        Some(EnumField::Values) => values = Some(try!(visitor.visit_value())),
+                        Some(EnumField::Comment) => {
+                            comment = Some(try!(visitor.visit_value()));
+                        }
+                        None => break,
+                    }
+                }
+
+                let values = match values {
+                    Some(values) => values,
+                    None => try!(visitor.missing_field("values")),
+                };
+                let comment = match comment {
+                    Some(comment) => comment,
+                    None => try!(visitor.missing_field("comment")),
+                };
+
+                try!(visitor.end());
+
+                Ok(Enum {
+                    values: values,
+                    comment: comment,
+                })
+            }
+        }
+
+        d.deserialize(EnumVisitor)
+    }
+}
+
+pub struct Variant {
+    pub name: Option<String>,
+    pub comment: Option<String>,
+}
+
+impl Deserialize for Variant {
+    fn deserialize<D>(d: &mut D) -> Result<Variant, D::Error>
+        where D: Deserializer
+    {
+        enum VariantField {
+            Name,
+            Comment,
+        }
+
+        impl Deserialize for VariantField {
+            fn deserialize<D>(d: &mut D) -> Result<VariantField, D::Error>
+                where D: Deserializer
+            {
+                struct VariantFieldVisitor;
+
+                impl Visitor for VariantFieldVisitor {
+                    type Value = VariantField;
+
+                    fn visit_str<E>(&mut self, value: &str) -> Result<VariantField, E>
+                        where E: Error
+                    {
+                        match value {
+                            "name" => Ok(VariantField::Name),
+                            "comment" => Ok(VariantField::Comment),
+                            f => Err(E::unknown_field(f)),
+                        }
+                    }
+                }
+
+                d.deserialize(VariantFieldVisitor)
+            }
+        }
+
+        struct VariantVisitor;
+
+        impl Visitor for VariantVisitor {
+            type Value = Variant;
+
+            fn visit_map<V>(&mut self, mut visitor: V) -> Result<Variant, V::Error>
+                where V: MapVisitor
+            {
+                let mut name = None;
+                let mut comment = None;
+
+                loop {
+                    match try!(visitor.visit_key()) {
+                        Some(VariantField::Name) => name = Some(try!(visitor.visit_value())),
+                        Some(VariantField::Comment) => {
+                            comment = Some(try!(visitor.visit_value()));
+                        }
+                        None => break,
+                    }
+                }
+
+                let name = match name {
+                    Some(name) => name,
+                    None => try!(visitor.missing_field("name")),
+                };
+                let comment = match comment {
+                    Some(comment) => comment,
+                    None => try!(visitor.missing_field("comment")),
+                };
+
+                try!(visitor.end());
+
+                Ok(Variant {
+                    name: name,
+                    comment: comment,
+                })
+            }
+        }
+
+        d.deserialize(VariantVisitor)
     }
 }
