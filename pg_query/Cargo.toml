@@ -2,8 +2,13 @@
 name = "pg_query"
 version = "0.1.0"
 authors = ["Steven Fackler <sfackler@gmail.com>"]
+build = "build/main.rs"
 
 [dependencies]
 lazy_static = "0.2"
 libc = "0.2"
 pg_query-sys = { path = "../pg_query-sys" }
+
+[build-dependencies]
+serde = "0.7"
+serde_json = "0.7"
