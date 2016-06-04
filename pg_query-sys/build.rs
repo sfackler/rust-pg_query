@@ -28,6 +28,7 @@ fn main() {
 
     println!("cargo:rustc-link-search=native={}", build_dir.display());
     println!("cargo:rustc-link-lib=static=pg_query");
+    println!("cargo:srcdata={}", build_dir.join("srcdata").display());
 }
 
 fn run(command: &mut Command) {
